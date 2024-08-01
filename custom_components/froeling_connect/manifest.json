@@ -1,0 +1,20 @@
+{
+  "domain": "froeling_connect",
+  "name": "Fr\u00f6ling Connect",
+  "version": "1.0.0",
+  "codeowners": [
+    "@Layf21"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/Layf21/hass-froeling-connect",
+  "homekit": {},
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Layf21/hass-froeling-connect/issues",
+  "requirements": [
+    "froeling-connect==2024.1.2"
+  ],
+  "ssdp": [],
+  "zeroconf": []
+}
