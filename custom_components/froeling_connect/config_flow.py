@@ -36,7 +36,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         api = Froeling(
             data[CONF_USERNAME], data[CONF_PASSWORD], auto_reauth=False, logger=LOGGER
         )
-        userdata = await api._login()  # noqa: SLF001
+        userdata = await api.login()
         await api.get_facilities()
     except AuthenticationError as e:
         raise InvalidAuth from e
@@ -98,7 +98,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
         api = Froeling(username, password, auto_reauth=False)
-        await api._login()  # noqa: SLF001
+        await api.login()
         assert api.session.token
 
         await api.session.close()
