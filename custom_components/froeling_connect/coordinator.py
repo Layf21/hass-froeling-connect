@@ -77,7 +77,6 @@ class FroelingConnectDataUpdateCoordinator(
                 component_dict = {c.component_id: c for c in components}
                 self.components[facility.facility_id] = component_dict
         except AuthenticationError as e:
-            await self.froeling.session.close()
             raise ConfigEntryAuthFailed from e
 
         await self.async_config_entry_first_refresh()
@@ -112,7 +111,7 @@ class FroelingConnectDataUpdateCoordinator(
             name=facility.name,
             manufacturer="Fröling",
             model=f"{facility.name} {facility.facilityGeneration}",
-            model_id=facility.facility_id,
+#            model_id=facility.facility_id, # Only sometimes breaks?
             serial_number=facility.equipmentNumber,
         )
 
@@ -124,7 +123,7 @@ class FroelingConnectDataUpdateCoordinator(
             name=component.display_name,
             manufacturer="Fröling",
             model=component.type,
-            model_id=component.sub_type,
+#            model_id=component.sub_type,
             serial_number=component.component_id,
             via_device=(DOMAIN, "facility", component.facility_id),
         )

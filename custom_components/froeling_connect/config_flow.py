@@ -42,8 +42,6 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         raise InvalidAuth from e
     except NetworkError as e:
         raise CannotConnect from e
-    finally:
-        await api.session.close()
 
     # Return info that you want to store in the config entry.
     return {
@@ -101,7 +99,6 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         await api.login()
         assert api.session.token
 
-        await api.session.close()
         return self.async_update_reload_and_abort(
             entry,
             data={**entry.data, CONF_TOKEN: api.session.token},
