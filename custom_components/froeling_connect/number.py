@@ -9,7 +9,7 @@ from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION, LOGGER
+from .const import ATTRIBUTION, CONF_SEND_CHANGES, LOGGER
 from .coordinator import (
     FroelingConnectConfigEntry,
     FroelingConnectDataUpdateCoordinator,
@@ -33,11 +33,15 @@ async def async_setup_entry(
 
     entities = []
     for idx, param in coordinator.data.parameters.items():
-        if param.parameter_type != "NumValueObject" or not param.editable:
-            continue
+        if not param.editable or not entry.data[CONF_SEND_CHANGES]:
+            continue  # Use sensor instead
+        if param.parameter_type != "NumValueObject":
+            continue  # Can't be represented by number
         if param.min_val == "0" and param.max_val == "1" and param.unit == "":
-            continue
-        entities.append(FroelingConnectNumber(coordinator, idx))
+            continue  # Use switch instead
+        entities.append(
+            FroelingConnectNumber(coordinator, idx, entry.data[CONF_SEND_CHANGES])
+        )
 
     async_add_entities(entities)
 
@@ -54,11 +58,13 @@ class FroelingConnectNumber(
         self,
         coordinator: FroelingConnectDataUpdateCoordinator,
         idx: tuple[int, str, str],
+        send_changes: bool = True,
     ) -> None:
         """Initialize number platform for Froeling Connect integration."""
         super().__init__(coordinator, context=idx)
 
         self._idx = idx  # (facility_id, component_id, parameter_id)
+        self.send_changes = send_changes
 
         parameter = coordinator.data.parameters[idx]
         component = coordinator.components[idx[0]][idx[1]]
@@ -101,5 +107,9 @@ class FroelingConnectNumber(
 
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
-        LOGGER.info("New value for %s is %f", self.name, value)
+        if not self.send_changes:
+            LOGGER.info("Did not set value for %s", self.name)
+            return
+
+        LOGGER.debug("New value for %s is %f", self.name, value)
         await self.parameter.set_value(str(int(value)))

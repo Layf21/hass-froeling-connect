@@ -100,7 +100,7 @@ class FroelingConnectDataUpdateCoordinator(
         except AuthenticationError as e:
             raise ConfigEntryAuthFailed from e
         except NetworkError as e:
-            raise UpdateFailed from e
+            raise UpdateFailed(repr(e)) from e
 
     def _register_facility_device_info(self, facility: Facility) -> None:
         device_registry = dr.async_get(self.hass)
@@ -111,7 +111,7 @@ class FroelingConnectDataUpdateCoordinator(
             name=facility.name,
             manufacturer="Fröling",
             model=f"{facility.name} {facility.facilityGeneration}",
-#            model_id=facility.facility_id, # Only sometimes breaks?
+            # model_id=facility.facility_id, # Only sometimes breaks?
             serial_number=facility.equipmentNumber,
         )
 
@@ -123,7 +123,7 @@ class FroelingConnectDataUpdateCoordinator(
             name=component.display_name,
             manufacturer="Fröling",
             model=component.type,
-#            model_id=component.sub_type,
+            # model_id=component.sub_type,
             serial_number=component.component_id,
             via_device=(DOMAIN, "facility", component.facility_id),
         )

@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
-    BinarySensorEntity,
-)
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION
+from .const import ATTRIBUTION, CONF_SEND_CHANGES
 from .coordinator import (
     FroelingConnectConfigEntry,
     FroelingConnectDataUpdateCoordinator,
@@ -30,7 +27,9 @@ async def async_setup_entry(
 
     entities = []
     for idx, param in coordinator.data.parameters.items():
-        if param.parameter_type != "NumValueObject" or param.editable:
+        if param.editable and entry.data[CONF_SEND_CHANGES]:
+            continue  # Use switch instead
+        if param.parameter_type != "NumValueObject":
             continue
         if param.min_val == "0" and param.max_val == "1" and param.unit == "":
             entities.append(FroelingConnectBinarySensor(coordinator, idx))

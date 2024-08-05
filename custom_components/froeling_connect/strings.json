@@ -5,7 +5,13 @@
         "data": {
           "username": "[%key:common::config_flow::data::username%]",
           "password": "[%key:common::config_flow::data::password%]",
-          "language": "[%key:common::config_flow::data::language%]"
+          "language": "[%key:common::config_flow::data::language%]",
+          "send_changes": "[%key:common::config_flow::data::send_changes%]"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "send_changes": "[%key:common::config_flow::data::send_changes%]"
         }
       }
     },

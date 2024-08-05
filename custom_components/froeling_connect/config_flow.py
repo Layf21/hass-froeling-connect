@@ -9,19 +9,21 @@ from froeling import Froeling
 from froeling.exceptions import AuthenticationError, NetworkError
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant import config_entries
 from homeassistant.const import CONF_LANGUAGE, CONF_PASSWORD, CONF_TOKEN, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .const import DOMAIN, LOGGER
+from .const import CONF_SEND_CHANGES, DOMAIN, LOGGER
 from .coordinator import FroelingConnectConfigEntry
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
-        vol.Required(CONF_LANGUAGE): str,
+        vol.Required(CONF_LANGUAGE, default="en"): str,
+        vol.Required(CONF_SEND_CHANGES, default=True): bool,
     }
 )
 
@@ -34,7 +36,11 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     try:
         api = Froeling(
-            data[CONF_USERNAME], data[CONF_PASSWORD], auto_reauth=False, logger=LOGGER
+            data[CONF_USERNAME],
+            data[CONF_PASSWORD],
+            auto_reauth=False,
+            logger=LOGGER,
+            clientsession=async_create_clientsession(hass),
         )
         userdata = await api.login()
         await api.get_facilities()
@@ -50,7 +56,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     }
 
 
-class ConfigFlow(ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Fröling Connect."""
 
     VERSION = 1
@@ -58,7 +64,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    ) -> config_entries.ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -68,13 +74,11 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except Exception:
+            except Exception:  # noqa: BLE001
                 LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                await self.async_set_unique_id(
-                    user_input[CONF_USERNAME] + str(info["user_id"])
-                )
+                await self.async_set_unique_id(str(info["user_id"]))
                 return self.async_create_entry(
                     title=user_input[CONF_USERNAME], data=info | user_input
                 )
@@ -85,7 +89,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_reauth(
         self, entry_data: Mapping[str, Any]
-    ) -> ConfigFlowResult:
+    ) -> config_entries.ConfigFlowResult:
         """Handle a flow initialized by a reauth event."""
 
         LOGGER.info("Reauth")
@@ -95,7 +99,12 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
             self.context["entry_id"]
         )
 
-        api = Froeling(username, password, auto_reauth=False)
+        api = Froeling(
+            username,
+            password,
+            auto_reauth=False,
+            clientsession=async_create_clientsession(self.hass),
+        )
         await api.login()
         assert api.session.token
 
@@ -103,6 +112,30 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
             entry,
             data={**entry.data, CONF_TOKEN: api.session.token},
             reload_even_if_entry_is_unchanged=False,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str:Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Handle a reconfiguration flow initialized by the user."""
+        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        if user_input is not None:
+            self.hass.config_entries.async_update_entry(
+                entry,
+                data=entry.data | {CONF_SEND_CHANGES: user_input[CONF_SEND_CHANGES]},
+            )
+            await self.hass.config_entries.async_reload(entry.entry_id)
+            return self.async_abort(reason="reconfigure_successful")
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SEND_CHANGES, default=entry.data[CONF_SEND_CHANGES]
+                    ): bool
+                }
+            ),
         )
 
 

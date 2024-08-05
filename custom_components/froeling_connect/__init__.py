@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
-from homeassistant.core import Event, HomeAssistant
+from homeassistant.core import HomeAssistant
 
 from .const import PLATFORMS
 from .coordinator import (
@@ -23,7 +22,6 @@ async def async_setup_entry(
     entry.runtime_data = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
 
     return True
 

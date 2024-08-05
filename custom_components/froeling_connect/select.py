@@ -9,7 +9,7 @@ from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION, LOGGER
+from .const import ATTRIBUTION, CONF_SEND_CHANGES, LOGGER
 from .coordinator import (
     FroelingConnectConfigEntry,
     FroelingConnectDataUpdateCoordinator,
@@ -26,13 +26,21 @@ async def async_setup_entry(
 
     entities = []
     for idx, param in coordinator.data.parameters.items():
-        if (
-            param.parameter_type != "StringValueObject"
-            or not param.editable
-            or not param.string_list_key_values
-        ):
-            continue
-        entities.append(FroelingConnectNumber(coordinator, idx))
+        if param.parameter_type != "StringValueObject":
+            continue  # Use number or sensor instead
+        if not param.editable or not entry.data[CONF_SEND_CHANGES]:
+            continue  # use sensor instead
+        if not param.string_list_key_values:
+            LOGGER.warning(
+                "Unexpected parameter data: %s[%s] value mapping is: %s",
+                param.name,
+                param.id,
+                param.string_list_key_values,
+            )
+            continue  # should not happen, type is StringValueObject but no strings are given
+        entities.append(
+            FroelingConnectNumber(coordinator, idx, entry.data[CONF_SEND_CHANGES])
+        )
 
     async_add_entities(entities)
 
@@ -49,11 +57,13 @@ class FroelingConnectNumber(
         self,
         coordinator: FroelingConnectDataUpdateCoordinator,
         idx: tuple[int, str, str],
+        send_changes: bool = True,
     ) -> None:
         """Initialize select entity for Froeling Connect integration."""
         super().__init__(coordinator, context=idx)
 
         self._idx = idx  # (facility_id, component_id, parameter_id)
+        self.send_changes = send_changes
 
         parameter = coordinator.data.parameters[idx]
         component = coordinator.components[idx[0]][idx[1]]
@@ -92,6 +102,10 @@ class FroelingConnectNumber(
 
     async def async_select_option(self, option: str) -> None:
         """Set new value."""
+        if not self.send_changes:
+            LOGGER.info("Did not set value for %s", self.name)
+            return
+
         if option not in self.parameter.string_list_key_values.values():
             raise ServiceValidationError(
                 f"{option} is not a valid state for {self.parameter.name}"
@@ -101,5 +115,5 @@ class FroelingConnectNumber(
             for key, value in self.parameter.string_list_key_values.items()
             if value == str(option)
         )
-        LOGGER.info("New value for %s is %s (%s)", self.name, option, number_value)
+        LOGGER.debug("New value for %s is %s (%s)", self.name, option, number_value)
         await self.parameter.set_value(str(number_value))

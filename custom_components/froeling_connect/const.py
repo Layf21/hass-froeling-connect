@@ -16,3 +16,4 @@ PLATFORMS: Final[list[Platform]] = [
     Platform.SENSOR,
 ]
 ATTRIBUTION: Final = "Data provided by Froeling Connect"
+CONF_SEND_CHANGES: Final = "send_changes"
