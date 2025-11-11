@@ -3,7 +3,7 @@
 # Home Assistant - Froeling Connect integration
 
 This is a custom component to allow you to manage and controll your Fröling devices in Home Assistant using the unofficial API.  
-This component is currently in beta. It works, but it may be unstable.
+This component is currently in beta. It works for me, but it may be unstable. It might take some time for me to get around to implementing fixes as I am rather busy right now.
 
 ### Features
 
@@ -60,3 +60,4 @@ Most of these do not impact the functionality of the integration.
    **NOTE:** If _Fröling Connect_ does not appear, hard refresh the browser (ctrl+F5) and search again
 9. Enter your email, password & language when prompted.
 10. Click _SUBMIT_
+
