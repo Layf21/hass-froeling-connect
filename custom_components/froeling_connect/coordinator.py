@@ -66,15 +66,16 @@ class FroelingConnectDataUpdateCoordinator(
         )
 
         try:
-            facilities = await self.froeling.get_facilities()
+            facilities: list[Facility] = await self.froeling.get_facilities()
             for facility in facilities:
                 self._register_facility_device_info(facility)
                 components = await facility.get_components()
                 for component in components:
-                    self.component_device_info[
-                        (component.facility_id, component.component_id)
-                    ] = self._get_component_device_info(component)
-                component_dict = {c.component_id: c for c in components}
+                    if component:
+                        self.component_device_info[
+                            (component.facility_id, component.component_id)
+                        ] = self._get_component_device_info(component)
+                component_dict = {c.component_id: c for c in components if c}
                 self.components[facility.facility_id] = component_dict
         except AuthenticationError as e:
             raise ConfigEntryAuthFailed from e
@@ -92,7 +93,7 @@ class FroelingConnectDataUpdateCoordinator(
                         parameters = await component.update()
                         LOGGER.debug("Pulling %s", component.display_name)
                         await asyncio.sleep(0.5)  # Ratelimit
-                        for parameter in parameters:
+                        for parameter in parameters.values():
                             parameters_out[
                                 (fid, component.component_id, parameter.id)
                             ] = parameter
@@ -110,9 +111,9 @@ class FroelingConnectDataUpdateCoordinator(
             identifiers={(DOMAIN, "facility", facility.facility_id)},
             name=facility.name,
             manufacturer="Fröling",
-            model=f"{facility.name} {facility.facilityGeneration}",
+            model=f"{facility.name} {facility.facility_generation}",
             # model_id=facility.facility_id, # Only sometimes breaks?
-            serial_number=facility.equipmentNumber,
+            serial_number=str(facility.equipment_number),
         )
 
     def _get_component_device_info(self, component: Component) -> DeviceInfo:
