@@ -1,7 +1,10 @@
 """Platform for Fröling Connect integration."""
 
 from __future__ import annotations
+
 from typing import Any
+
+from froeling.datamodels.timewindow import TimeWindows
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -10,7 +13,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import StrEnum, UnitOfTemperature, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity import generate_entity_id
+from homeassistant.helpers.entity import Entity, generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -48,7 +51,7 @@ async def async_setup_entry(
             continue  # Use binary_sensor instead
         entities.append(FroelingConnectSensor(coordinator, idx))
 
-    for idx, timewindow in coordinator.data.time_windows.items():
+    for idx, timewindows in coordinator.data.time_windows.items():
         entities.append(FroelingConnectTimeWindows(coordinator, idx))
 
     async_add_entities(entities)
@@ -83,13 +86,18 @@ class FroelingConnectTimeWindows(
             hass=coordinator.hass,
         )
 
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-
         self._attr_device_info = self.coordinator.component_device_info[
             (self._idx[0], self._idx[1])
         ]
 
         self._set_value()
+
+    async def set_timewindows(self, timewindows: list[dict]) -> None:
+        """Set timewindows for Froeling Connect facilities."""
+        if not self.coordinator.config_entry.data[CONF_SEND_CHANGES]:
+            raise RuntimeError("Sending changes is disabled. Service won't run.")
+        facility = await self.coordinator.froeling.get_facility(self._idx[0])
+        await facility.update_time_windows(TimeWindows._from_list(timewindows))  # noqa: SLF001
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -99,15 +107,12 @@ class FroelingConnectTimeWindows(
 
     def _set_value(self) -> None:
         self.timewindows = self.coordinator.data.time_windows[self._idx]
-        self._attr_native_value = len(self.timewindows.to_list())
+        self._attr_native_value = "ok" if self.timewindows else None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the timewindows."""
-        return {
-            "timewindows": self.timewindows.to_list(),
-            "facility_id": self._idx[0],
-        }
+        return {"timewindows": self.timewindows.to_list()}
 
 
 class FroelingConnectSensor(
