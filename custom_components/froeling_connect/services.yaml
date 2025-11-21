@@ -1,0 +1,14 @@
+set_timewindows:
+  description: "Set timewindows for Froeling Connect facilities."
+  fields:
+    facility_id:
+      description: "The ID of the facility to set timewindows for."
+      required: true
+      example: "12345"
+      selector:
+        number:
+    timewindows:
+      description: "A list of timewindows to set for the facility. Take this from the timewindow sensor attributes."
+      required: true
+      selector:
+        object:

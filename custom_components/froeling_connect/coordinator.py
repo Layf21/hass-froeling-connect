@@ -8,6 +8,7 @@ from datetime import timedelta
 import logging
 
 from froeling import Component, Facility, Froeling, Parameter
+from froeling.datamodels.timewindow import TimeWindows
 from froeling.exceptions import AuthenticationError, NetworkError
 
 from homeassistant.config_entries import ConfigEntry
@@ -29,6 +30,7 @@ class FroelingConnectCoordinatorData:
     """Data Type of FroelingConnectDataUpdateCoordinator's data."""
 
     parameters: dict[tuple[int, str, str], Parameter]
+    time_windows: dict[tuple[int, str], TimeWindows]
 
 
 class FroelingConnectDataUpdateCoordinator(
@@ -50,7 +52,7 @@ class FroelingConnectDataUpdateCoordinator(
 
         self.update_interval = timedelta(seconds=30)
         self.components: dict[int, dict[str, Component]] = {}
-        self.data = FroelingConnectCoordinatorData({})
+        self.data = FroelingConnectCoordinatorData({}, {})
         self.component_device_info: dict[tuple[int, str], DeviceInfo] = {}
 
     async def async_setup(self) -> None:
@@ -88,6 +90,7 @@ class FroelingConnectDataUpdateCoordinator(
         try:
             async with asyncio.timeout(10):
                 parameters_out = {}
+                timewondows_out = {}
                 for fid, components in self.components.items():
                     for component in components.values():
                         parameters = await component.update()
@@ -97,7 +100,13 @@ class FroelingConnectDataUpdateCoordinator(
                             parameters_out[
                                 (fid, component.component_id, parameter.id)
                             ] = parameter
-            return FroelingConnectCoordinatorData(parameters=parameters_out)
+                        if component.time_windows:
+                            timewondows_out[(fid, component.component_id)] = (
+                                component.time_windows
+                            )
+            return FroelingConnectCoordinatorData(
+                parameters=parameters_out, time_windows=timewondows_out
+            )
         except AuthenticationError as e:
             raise ConfigEntryAuthFailed from e
         except NetworkError as e:

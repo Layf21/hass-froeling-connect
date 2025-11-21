@@ -13,7 +13,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Layf21/hass-froeling-connect/issues",
   "requirements": [
-    "froeling-connect==0.2.0"
+    "froeling-connect==0.2.1.dev3"
   ],
   "ssdp": [],
   "zeroconf": []

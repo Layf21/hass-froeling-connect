@@ -1,13 +1,14 @@
 """Platform for Fröling Connect integration."""
 
 from __future__ import annotations
+from typing import Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfTemperature, UnitOfTime
+from homeassistant.const import StrEnum, UnitOfTemperature, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -19,7 +20,9 @@ from .coordinator import (
     FroelingConnectDataUpdateCoordinator,
 )
 
-device_class_unit_mapping: dict[str, str] = {
+device_class_unit_mapping: dict[
+    str, tuple[SensorDeviceClass | None, StrEnum | None]
+] = {
     "°C": (SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS),
     "°F": (SensorDeviceClass.TEMPERATURE, UnitOfTemperature.FAHRENHEIT),
     "h": (SensorDeviceClass.DURATION, UnitOfTime.HOURS),
@@ -45,7 +48,66 @@ async def async_setup_entry(
             continue  # Use binary_sensor instead
         entities.append(FroelingConnectSensor(coordinator, idx))
 
+    for idx, timewindow in coordinator.data.time_windows.items():
+        entities.append(FroelingConnectTimeWindows(coordinator, idx))
+
     async_add_entities(entities)
+
+
+class FroelingConnectTimeWindows(
+    CoordinatorEntity[FroelingConnectDataUpdateCoordinator], SensorEntity
+):
+    """Representation of a TimeWindow Sensor."""
+
+    _attr_attribution = ATTRIBUTION
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: FroelingConnectDataUpdateCoordinator,
+        idx: tuple[int, str],
+    ) -> None:
+        """Initialize TimeWindow sensor for Froeling Connect integration."""
+        super().__init__(coordinator, context=idx)
+
+        self._idx = idx  # (facility_id, component_id)
+
+        self.timewindows = coordinator.data.time_windows[idx]
+        self.component = coordinator.components[idx[0]][idx[1]]
+
+        self._attr_name = f"{self.component.display_name} TimeWindows"
+        self._attr_unique_id = f"{idx[0]}_{idx[1]}_timewindows"
+        self.entity_id = generate_entity_id(
+            "sensor.{}",
+            f"{idx[0]}_{self.component.display_name}_timewindows",
+            hass=coordinator.hass,
+        )
+
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+        self._attr_device_info = self.coordinator.component_device_info[
+            (self._idx[0], self._idx[1])
+        ]
+
+        self._set_value()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._set_value()
+        self.async_write_ha_state()
+
+    def _set_value(self) -> None:
+        self.timewindows = self.coordinator.data.time_windows[self._idx]
+        self._attr_native_value = len(self.timewindows.to_list())
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the timewindows."""
+        return {
+            "timewindows": self.timewindows.to_list(),
+            "facility_id": self._idx[0],
+        }
 
 
 class FroelingConnectSensor(
@@ -90,6 +152,10 @@ class FroelingConnectSensor(
             self._attr_state_class = SensorStateClass.MEASUREMENT
         elif parameter.parameter_type == "StringValueObject":
             self._attr_device_class = SensorDeviceClass.ENUM
+            if parameter.string_list_key_values is None:
+                raise ValueError(
+                    "Parameter of type StringValueObject must have string_list_key_values"
+                )
             self._attr_options = list(parameter.string_list_key_values.values())
 
         self._attr_device_info = self.coordinator.component_device_info[
