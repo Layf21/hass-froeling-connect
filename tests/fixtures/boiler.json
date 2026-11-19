@@ -1,0 +1,106 @@
+{
+  "componentType": "Boiler",
+  "defaultName": "Test boiler",
+  "id": 101,
+  "topView": [
+    {
+      "valueItems": [
+        {
+          "id": "state",
+          "name": "actualState",
+          "type": "StringListValue",
+          "displayText": "Kesselzustand",
+          "editable": false,
+          "value": 65,
+          "possibleValues": [
+            {
+              "value": 65,
+              "displayValue": "Scheitholzbetrieb"
+            },
+            {
+              "value": 64,
+              "displayValue": "Pelletbetrieb"
+            },
+            {
+              "value": 0,
+              "displayValue": ""
+            }
+          ]
+        },
+        {
+          "id": "temp",
+          "name": "tempBoiler",
+          "type": "NumberValue",
+          "displayText": "Kesseltemperatur",
+          "displayUnit": "°C",
+          "value": 75.5
+        },
+        {
+          "id": "fire",
+          "name": "isFire",
+          "type": "BooleanValue",
+          "displayText": "Feuer",
+          "value": true
+        },
+        {
+          "id": "pellet",
+          "name": "isPelletFire",
+          "type": "BooleanValue",
+          "displayText": "Pelletfeuer",
+          "value": false
+        },
+        {
+          "id": "mode",
+          "name": "operationMode",
+          "type": "StringListValue",
+          "displayText": "Betriebsart",
+          "editable": true,
+          "value": 1,
+          "possibleValues": [
+            {
+              "value": 0,
+              "displayValue": "Ein"
+            },
+            {
+              "value": 1,
+              "displayValue": "Aus"
+            }
+          ]
+        },
+        {
+          "id": "bad",
+          "name": "invalidTemp",
+          "type": "NumberValue",
+          "displayText": "Invalid",
+          "displayUnit": "°C",
+          "isInvalid": true,
+          "value": 999
+        },
+        {
+          "id": "schedule",
+          "name": "schedule",
+          "type": "TimeScheduleValue",
+          "displayText": "Schedule",
+          "value": {
+            "timeFrames": []
+          }
+        }
+      ]
+    }
+  ],
+  "listView": [
+    {
+      "valueItems": [
+        {
+          "id": "temp",
+          "name": "tempBoiler",
+          "type": "NumberValue",
+          "displayText": "Kesseltemperatur",
+          "displayUnit": "°C",
+          "value": 75.5
+        }
+      ]
+    }
+  ],
+  "valueItems": {}
+}

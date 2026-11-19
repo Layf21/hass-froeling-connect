@@ -20,6 +20,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN, LOGGER
+from .nxg_readonly import NXGComponent, get_nxg_components
 
 type FroelingConnectConfigEntry = ConfigEntry[FroelingConnectDataUpdateCoordinator]
 
@@ -69,7 +70,12 @@ class FroelingConnectDataUpdateCoordinator(
             facilities: list[Facility] = await self.froeling.get_facilities()
             for facility in facilities:
                 self._register_facility_device_info(facility)
-                components = await facility.get_components()
+                if facility.facility_generation == "GEN_NXG":
+                    # Only the observed NXG GET API is supported. Do not expose writes.
+                    self.update_interval = timedelta(seconds=120)
+                    components = await get_nxg_components(facility)
+                else:
+                    components = await facility.get_components()
                 for component in components:
                     if component:
                         self.component_device_info[
@@ -86,7 +92,13 @@ class FroelingConnectDataUpdateCoordinator(
     async def _async_update_data(self) -> FroelingConnectCoordinatorData:
         """Fetch data from Froeling API."""
         try:
-            async with asyncio.timeout(10):
+            # Allow three sequential NXG requests without changing the legacy timeout.
+            timeout = 60 if any(
+                isinstance(c, NXGComponent)
+                for components in self.components.values()
+                for c in components.values()
+            ) else 10
+            async with asyncio.timeout(timeout):
                 parameters_out = {}
                 for fid, components in self.components.items():
                     for component in components.values():
