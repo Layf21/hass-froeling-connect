@@ -1,0 +1,74 @@
+{
+  "componentType": "BufferTankSystemDual",
+  "id": 102,
+  "topView": [
+    {
+      "valueItems": [
+        {
+          "id": "buffer1SensorBarSlotA",
+          "name": "buffer1SensorBarSlotA",
+          "type": "NumberValue",
+          "displayText": "buffer1SensorBarSlotA",
+          "displayUnit": "°C",
+          "value": 70.0
+        },
+        {
+          "id": "buffer1SensorBarSlotH",
+          "name": "buffer1SensorBarSlotH",
+          "type": "NumberValue",
+          "displayText": "buffer1SensorBarSlotH",
+          "displayUnit": "°C",
+          "value": 40.0
+        },
+        {
+          "id": "buffer2SensorBarSlotD",
+          "name": "buffer2SensorBarSlotD",
+          "type": "NumberValue",
+          "displayText": "buffer2SensorBarSlotD",
+          "displayUnit": "°C",
+          "value": 35.0
+        },
+        {
+          "id": "buffer2SensorBarSlotJ",
+          "name": "buffer2SensorBarSlotJ",
+          "type": "NumberValue",
+          "displayText": "buffer2SensorBarSlotJ",
+          "displayUnit": "°C",
+          "value": 25.0
+        }
+      ]
+    }
+  ],
+  "listView": [
+    {
+      "valueItems": [
+        {
+          "id": "soc",
+          "name": "stateOfChargePerc",
+          "type": "IntValue",
+          "displayText": "Ladezustand",
+          "displayUnit": "%",
+          "value": 40
+        },
+        {
+          "id": "loading",
+          "name": "loadingDirection",
+          "type": "StringListValue",
+          "displayText": "Ladeaktivität",
+          "value": 3,
+          "possibleValues": [
+            {
+              "value": 0,
+              "displayValue": "Keine Ladung"
+            },
+            {
+              "value": 3,
+              "displayValue": "Be - und Entladen"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "valueItems": {}
+}

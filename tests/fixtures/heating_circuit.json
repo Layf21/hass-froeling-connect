@@ -1,0 +1,73 @@
+{
+  "componentType": "HeatingCircuit",
+  "id": 103,
+  "topView": [
+    {
+      "valueItems": [
+        {
+          "id": "flow",
+          "name": "flowTemp",
+          "type": "NumberValue",
+          "displayText": "Vorlauf",
+          "displayUnit": "°C",
+          "value": 45.0
+        },
+        {
+          "id": "outside",
+          "name": "pt1OutsideTempDegC",
+          "type": "NumberValue",
+          "displayText": "Außen",
+          "displayUnit": "°C",
+          "value": 5.0
+        },
+        {
+          "id": "room",
+          "name": "setpointRoomTemperature",
+          "type": "NumberValue",
+          "displayText": "Raumsoll",
+          "displayUnit": "°C",
+          "editable": true,
+          "value": 21.0
+        },
+        {
+          "id": "pump",
+          "name": "pumpControllerIsComponentActive",
+          "type": "BooleanValue",
+          "displayText": "Pumpe",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "listView": [],
+  "additionalView": {
+    "timeInformation": {
+      "valueItems": [
+        {
+          "id": "time",
+          "name": "timeInformationPointOfTime",
+          "type": "PointOfTimeValue",
+          "displayText": "Zeit",
+          "value": {
+            "hour": 20,
+            "min": 0
+          }
+        },
+        {
+          "id": "info",
+          "name": "heatingCircuitInformation",
+          "type": "StringListValue",
+          "displayText": "Information",
+          "value": 10,
+          "possibleValues": [
+            {
+              "value": 10,
+              "displayValue": "Heizphase bis:"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "valueItems": {}
+}

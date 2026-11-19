@@ -61,3 +61,35 @@ Most of these do not impact the functionality of the integration.
 9. Enter your email, password & language when prompted.
 10. Click _SUBMIT_
 
+
+## GEN_NXG (read-only)
+
+GEN_NXG installations use a separate `/nxg/facility/.../web` API and nested
+`valueItems` in `topView`, `listView`, and `additionalView`. This integration
+supports the observed `Boiler`, `HeatingCircuit`, and `BufferTankSystemDual`
+component types. Other NXG components are deliberately skipped for now.
+
+The adapter reuses the existing authenticated Fröling Connect session. It exposes
+numeric values, boolean states and enumerated values as sensors. All NXG values
+remain read-only, including values marked editable in the portal, regardless of
+the integration's send-changes setting. Free text, timestamps and schedules are
+not exposed. Unknown component schemas are not claimed to be supported.
+
+NXG polling uses a 120-second interval and a 60-second update timeout; the
+existing interval and timeout for installations without NXG are unchanged.
+With mixed generations in one entry, the shared coordinator uses NXG timing.
+
+Manually validated on an S5 Dual 34 (GEN_NXG): 22 boiler entities, 11 dual-buffer
+entities and 18 heating-circuit entities (51 in total), with values updating
+across polling cycles. Counts vary with equipment and configuration. This does
+not establish compatibility with all NXG boilers.
+
+The unit tests use synthetic API fixtures; they contain no account identifiers,
+serial numbers, addresses, credentials, or captured API UUIDs. Run them without
+Home Assistant installed:
+
+```sh
+python3 -m venv .venv-tests
+.venv-tests/bin/pip install froeling-connect==0.2.0
+.venv-tests/bin/python -m unittest discover -s tests -v
+```
