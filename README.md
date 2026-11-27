@@ -13,6 +13,7 @@ This component is currently in beta. It works for me, but it may be unstable. It
 * Compatible with all Fröling components (in theory)
 * Uses persistent token and only reauthenticates when necessary
 * Configuration via UI
+* Change login credentials later via _Reconfigure_ (no need to remove and re-add the integration)
 * Completely async
 
 ### Issues
@@ -46,6 +47,12 @@ Most of these do not impact the functionality of the integration.
 > ### DISCLAIMER:
 > I am not responsible for any damage that may arise from using this software.  
 > Use at your own risk.
+
+## Updating your login credentials
+
+If your Fröling Connect password changed, open _Settings → Devices & services → Fröling Connect_, click the three-dot menu of the entry and choose _Reconfigure_. Enter the (new) credentials; they are verified against the API before being saved. If the integration notices on its own that the stored password no longer works, it will ask you to re-authenticate.
+
+Requires Home Assistant 2024.12 or newer.
 
 ## Installation (HACS) - Highly Recommended
 

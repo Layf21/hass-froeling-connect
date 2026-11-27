@@ -6,12 +6,24 @@
           "username": "[%key:common::config_flow::data::username%]",
           "password": "[%key:common::config_flow::data::password%]",
           "language": "[%key:common::config_flow::data::language%]",
-          "send_changes": "[%key:common::config_flow::data::send_changes%]"
+          "send_changes": "Send changes"
+        }
+      },
+      "reauth_confirm": {
+        "title": "[%key:common::config_flow::title::reauth%]",
+        "description": "The stored password for {username} is no longer valid. Please enter the new password.",
+        "data": {
+          "password": "[%key:common::config_flow::data::password%]"
         }
       },
       "reconfigure": {
+        "title": "Reconfigure Fröling Connect",
+        "description": "Update the login credentials and settings. The password must be re-entered.",
         "data": {
-          "send_changes": "[%key:common::config_flow::data::send_changes%]"
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "language": "[%key:common::config_flow::data::language%]",
+          "send_changes": "Send changes"
         }
       }
     },
@@ -21,7 +33,10 @@
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "[%key:common::config_flow::abort::already_configured_account%]",
+      "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]",
+      "unique_id_mismatch": "The entered credentials belong to a different Fröling Connect account than the one configured."
     }
   }
 }
