@@ -1,7 +1,10 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Device is already configured"
+            "already_configured": "Account is already configured",
+            "reauth_successful": "Re-authentication was successful",
+            "reconfigure_successful": "Re-configuration was successful",
+            "unique_id_mismatch": "The entered credentials belong to a different Fröling Connect account than the one configured."
         },
         "error": {
             "cannot_connect": "Failed to connect",
@@ -10,6 +13,23 @@
         },
         "step": {
             "user": {
+                "data": {
+                    "send_changes": "Send changes",
+                    "language": "Language",
+                    "password": "Password",
+                    "username": "Email"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Re-authenticate",
+                "description": "The stored password for {username} is no longer valid. Please enter the new password.",
+                "data": {
+                    "password": "Password"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Fröling Connect",
+                "description": "Update the login credentials and settings. The password must be re-entered.",
                 "data": {
                     "send_changes": "Send changes",
                     "language": "Language",

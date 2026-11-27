@@ -1,7 +1,10 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Gerät ist bereits konfiguriert"
+            "already_configured": "Konto ist bereits konfiguriert",
+            "reauth_successful": "Erneute Authentifizierung war erfolgreich",
+            "reconfigure_successful": "Neukonfiguration war erfolgreich",
+            "unique_id_mismatch": "Die eingegebenen Zugangsdaten gehören zu einem anderen Fröling-Connect-Konto als dem konfigurierten."
         },
         "error": {
             "cannot_connect": "Fehler beim Verbinden",
@@ -10,6 +13,23 @@
         },
         "step": {
             "user": {
+                "data": {
+                    "send_changes": "Änderungen senden",
+                    "language": "Sprache",
+                    "password": "Passwort",
+                    "username": "Email"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Erneut authentifizieren",
+                "description": "Das gespeicherte Passwort für {username} ist nicht mehr gültig. Bitte das neue Passwort eingeben.",
+                "data": {
+                    "password": "Passwort"
+                }
+            },
+            "reconfigure": {
+                "title": "Fröling Connect neu konfigurieren",
+                "description": "Zugangsdaten und Einstellungen aktualisieren. Das Passwort muss erneut eingegeben werden.",
                 "data": {
                     "send_changes": "Änderungen senden",
                     "language": "Sprache",
